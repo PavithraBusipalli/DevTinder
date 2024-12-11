@@ -1,0 +1,21 @@
+{
+  "name": "devtinderbyme",
+  "version": "1.0.0",
+  "main": "app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "nodeJS",
+    "JS",
+    "Express"
+  ],
+  "author": "Pavithra Reddy",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^4.21.2",
+    "nodemon": "^3.1.7"
+  }
+}
