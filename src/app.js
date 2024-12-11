@@ -1,33 +1,40 @@
 const express = require('express');
 
 const app = express();
+const {adminAuth, userAuth} = require('./middleware/auth');
 
-// Request handlers
-// app.get('/user/:userId/:name/:password', (req, res) => {
-//     // console.log(req.query );
-//     console.log(req.params);
-//     res.send('Yesss')
-// })
+// app.use('/user', adminAuth);
+// app.use('/admin', userAuth)
 
-app.use('/user', (req, res, next) => {
-    console.log('Handling the route user!');
-    // res.send('1st response');
-    
-    // res.send('1st respo nse');
-    next();
-},
-    (req, res, next) => {
-        console.log('Handling the route user 2'); 
-        // res.send('2nd response')
-        next();
-    },
-    (req, res) => {
-        console.log('Handling the 3rd response!');
-        res.send('3r d response');
-        // next();
-    },
-);
-
-app.listen(2350, () => {
-    console.log('server is running..!!');
+app.get('/user/getAllData', adminAuth, (req, res) => {
+    console.log('sent all data');
+    res.send('all data sent')
 });
+
+app.get('/user/updateData',adminAuth, (req, res) => {
+    console.log('updating the user');
+    res.send('update success');
+});
+
+app.get('/user/deleteUser', adminAuth, (req, res) => {
+    console.log('deleting the user');
+    res.send('deleting success')   
+})
+
+app.get('/admin/getAllData', userAuth, (req, res) => {
+    console.log('sent all data');
+    res.send('all data sent')
+});
+
+app.get('/admin/updateData', userAuth, (req, res) => {
+    console.log('updating the user');
+    res.send('update success');
+});
+
+app.get('/admin/deleteUser', userAuth, (req, res) => {
+    console.log('deleting the user');
+    res.send('deleting success')   
+})
+
+
+app.listen(3000, () => console.log('Server is listening to the port: 3000..!'));
