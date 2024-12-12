@@ -13,7 +13,8 @@ app.post('/signup', async (req, res) => {
         await user.save();
         res.send('User created successfully');
     } catch(err) {
-        res.send('Error: ', err);
+        console.log("Error");
+        res.status(404).send('Error: ' + err);
     }
 })
 
@@ -63,10 +64,19 @@ app.put('/updateUser', async (req, res) => {
     const userId = req.body.id;
     const data = req.body;
     try {
-        const user = await User.findByIdAndUpdate(userId, data);
+        const ALLOWED_UPDATES = ["id", 'about', 'age', 'about', 'skills'];
+        // ignoring email, name updates
+        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATES.includes(k));
+        if(!isUpdateAllowed) {
+            throw new Error("Update not allowed!")
+        }    
+        const user = await User.findByIdAndUpdate(userId, data, {
+            ruturnDocument: "after",
+            runValidators: true,
+        });
         res.send('User updated successfully');
     } catch(err) {
-        res.status(400).send('Something went wrong');
+        res.status(400).send('Something went wrong ' + err.message);
     }
 })
 
