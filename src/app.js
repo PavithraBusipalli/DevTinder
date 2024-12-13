@@ -4,9 +4,13 @@ const { User } = require('./models/user');
 const app = express();
 const {validateSignUpData} = require('./utils/validation');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const {userAuth} = require('./middleware/auth');
 
 // It will work of all methods to handle json data processing..!
 app.use(express.json());
+app.use(cookieParser());
 
 // Creating user
 app.post('/signup', async (req, res) => {
@@ -34,12 +38,15 @@ app.post('/signin', async (req, res) => {
     try {
         const {email, password} = req.body;
         const user = await User.findOne({ email: email});
-        console.log('user: ', user);
         if(!user) {
             throw new Error("Invalid Credentials");
         }
         const isPassword = await bcrypt.compare(password, user.password);
         if(isPassword) {
+            // Create a JWT Token
+            const token = await jwt.sign({_id: user._id}, "DevTinder@2024", {expiresIn: '1m'});
+            // Attaching token to cookie
+            res.cookie("token", token)
             res.send("Login Successful!!");
         }
         else {
@@ -65,6 +72,22 @@ app.get('/user', async (req, res) => {
     }
 })
 
+app.get('/profile', userAuth, async (req, res) => {
+    const token = req.cookies;
+    const user = req.user;
+    try {
+        console.log('user: ', );
+        if(!token) {
+            throw new Error("Invalid Token");
+        }
+        if(!user) {
+            throw new Error("User not found!");
+        }
+        res.send(user);
+    } catch(e) {
+        res.status(400).send("ERROR : " + e.message);
+    }
+})
 
 // Get all the users 
 app.get('/getAllUsers', async (req, res) => {
