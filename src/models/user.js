@@ -16,20 +16,20 @@ const userSchema = new mongoose.Schema({
         unique: true,
         required: true,
         trim: true,
-        validate(val) {
-            if(!validator.isEmail(val)){
-                throw new Error("Invalid Email address");
-            }
-        }
+        // validate(val) {
+        //     if(!validator.isEmail(val)){
+        //         throw new Error("Invalid Email address");
+        //     }
+        // }
     },
     password: {
         type: String,
         required: true,
-        validate(pswd) {
-            if(!validator.isStrongPassword(pswd)){
-                throw new Error("Weak Password");
-            }
-        }
+        // validate(pswd) {
+        //     if(!validator.isStrongPassword(pswd)){
+        //         throw new Error("Weak Password");
+        //     }
+        // }
     },
     phoneNo: {
         type: Number

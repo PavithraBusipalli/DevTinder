@@ -2,19 +2,51 @@ const express = require('express');
 const connectDB = require('./config/database');
 const { User } = require('./models/user');
 const app = express();
+const {validateSignUpData} = require('./utils/validation');
+const bcrypt = require('bcrypt');
 
 // It will work of all methods to handle json data processing..!
 app.use(express.json());
 
 // Creating user
 app.post('/signup', async (req, res) => {
-    const user = new User(req.body);
     try {
+        validateSignUpData(req);
+        const {password, firstName, lastName, email} = req.body;
+        const hashPswd = await bcrypt.hash(password, 10);
+        req.body.password = hashPswd
+        const user = new User({
+            firstName,
+            lastName,
+            email,
+            password: hashPswd,
+        });
         await user.save();
         res.send('User created successfully');
     } catch(err) {
         console.log("Error");
         res.status(404).send('Error: ' + err);
+    }
+})
+
+// Login API
+app.post('/signin', async (req, res) => {
+    try {
+        const {email, password} = req.body;
+        const user = await User.findOne({ email: email});
+        console.log('user: ', user);
+        if(!user) {
+            throw new Error("Invalid Credentials");
+        }
+        const isPassword = await bcrypt.compare(password, user.password);
+        if(isPassword) {
+            res.send("Login Successful!!");
+        }
+        else {
+            throw new Error("Invalid Credentials!");
+        }
+    } catch(e) {
+        res.status(400).send("ERROR : " + e.message);
     }
 })
 
