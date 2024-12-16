@@ -5,57 +5,19 @@ const app = express();
 const {validateSignUpData} = require('./utils/validation');
 const bcrypt = require('bcrypt');
 const cookieParser = require('cookie-parser');
-const jwt = require('jsonwebtoken');
 const {userAuth} = require('./middleware/auth');
+const jwt = require('jsonwebtoken');
+const {authRouter} = require('./routes/auth');
+const {profileRouter} = require('./routes/profile');
+const {requestRouter} = require('./routes/request');
 
 // It will work of all methods to handle json data processing..!
 app.use(express.json());
 app.use(cookieParser());
 
-// Creating user
-app.post('/signup', async (req, res) => {
-    try {
-        validateSignUpData(req);
-        const {password, firstName, lastName, email} = req.body;
-        const hashPswd = await bcrypt.hash(password, 10);
-        req.body.password = hashPswd
-        const user = new User({
-            firstName,
-            lastName,
-            email,
-            password: hashPswd,
-        });
-        await user.save();
-        res.send('User created successfully');
-    } catch(err) {
-        console.log("Error");
-        res.status(404).send('Error: ' + err);
-    }
-})
-
-// Login API
-app.post('/signin', async (req, res) => {
-    try {
-        const {email, password} = req.body;
-        const user = await User.findOne({ email: email});
-        if(!user) {
-            throw new Error("Invalid Credentials");
-        }
-        const isPassword = await bcrypt.compare(password, user.password);
-        if(isPassword) {
-            // Create a JWT Token
-            const token = await jwt.sign({_id: user._id}, "DevTinder@2024", {expiresIn: '1m'});
-            // Attaching token to cookie
-            res.cookie("token", token)
-            res.send("Login Successful!!");
-        }
-        else {
-            throw new Error("Invalid Credentials!");
-        }
-    } catch(e) {
-        res.status(400).send("ERROR : " + e.message);
-    }
-})
+app.use(authRouter);
+app.use(profileRouter);
+app.use(requestRouter);
 
 // Get user by email
 app.get('/user', async (req, res) => {
@@ -72,22 +34,6 @@ app.get('/user', async (req, res) => {
     }
 })
 
-app.get('/profile', userAuth, async (req, res) => {
-    const token = req.cookies;
-    const user = req.user;
-    try {
-        console.log('user: ', );
-        if(!token) {
-            throw new Error("Invalid Token");
-        }
-        if(!user) {
-            throw new Error("User not found!");
-        }
-        res.send(user);
-    } catch(e) {
-        res.status(400).send("ERROR : " + e.message);
-    }
-})
 
 // Get all the users 
 app.get('/getAllUsers', async (req, res) => {
@@ -143,7 +89,7 @@ connectDB()
             console.log('Server is listening..!!'); 
         })
     })
-    .catch(() => {
-        console.log('DB Connection Failure!');
+    .catch((e) => {
+        console.log('DB Connection Failure!', e );
     })
 
